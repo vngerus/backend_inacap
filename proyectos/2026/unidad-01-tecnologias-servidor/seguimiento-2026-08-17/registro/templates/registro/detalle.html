@@ -1,0 +1,24 @@
+{% extends 'registro/base.html' %}
+
+{% block title %}{{ michi.nombre }} · Michis{% endblock %}
+
+{% block content %}
+    <a href="{% url 'lista_michis' %}" class="text-sm text-muted hover:text-ink">&larr; Volver al listado</a>
+
+    <div class="relative rounded-2xl bg-white p-8 shadow-sm border border-ink/5 mt-6 max-w-sm before:content-[''] before:absolute before:-top-[0.55rem] before:left-[0.9rem] before:w-[1.1rem] before:h-[1.1rem] before:bg-white before:rounded-[9999px_9999px_0_9999px] before:-rotate-[25deg] after:content-[''] after:absolute after:-top-[0.55rem] after:right-[0.9rem] after:w-[1.1rem] after:h-[1.1rem] after:bg-white after:rounded-[9999px_9999px_0_9999px] after:rotate-[115deg]">
+        <a href="{% url 'editar_michi' michi.id %}"
+           aria-label="Editar {{ michi.nombre }}"
+           title="Editar"
+           class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-muted hover:text-marmalade hover:bg-marmalade/10 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                <path d="M15 5l4 4"></path>
+            </svg>
+        </a>
+
+        <p class="font-display text-2xl font-800 pr-8">{{ michi.nombre }}</p>
+        <p class="text-sm text-muted mt-2">
+            <span class="inline-block bg-teal/10 text-teal font-medium px-2 py-0.5 rounded-full">{{ michi.tipo }}</span>
+        </p>
+    </div>
+{% endblock %}

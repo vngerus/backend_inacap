@@ -29,7 +29,7 @@ Definición de la estructura de datos en `registro/models.py`:
 ```python
 from django.db import models
 
-class Gato(models.Model):
+class Michi(models.Model):
     nombre = models.CharField(max_length=50)
     tipo = models.CharField(max_length=50)
 
@@ -55,69 +55,153 @@ python manage.py shell
 ```
 
 ```python
-from registro.models import Gato
-Gato.objects.create(nombre="Luna", tipo="calicó")
-Gato.objects.create(nombre="Kimchi", tipo="naranja")
-Gato.objects.create(nombre="Léa", tipo="tuxedo")
+from registro.models import Michi
+Michi.objects.create(nombre="Luna", tipo="calicó")
+Michi.objects.create(nombre="Kimchi", tipo="naranja")
+Michi.objects.create(nombre="Léa", tipo="tuxedo")
 exit()
 ```
 
-## Fase 6: La Vista (View)
+## Fase 6: El Admin
 
-Lógica para procesar la solicitud en `registro/views.py`:
-
-```python
-from django.shortcuts import render
-from .models import Gato
-
-def lista_gatos(request):
-    gatos = Gato.objects.all()
-    return render(request, 'registro/lista.html', {'gatos': gatos})
-```
-
-## Fase 7: Enrutamiento (URL Routing)
-
-Conexión de la dirección web con la vista en `avance_proyecto/urls.py`:
+Registro del modelo en `registro/admin.py` para gestionarlo desde `/admin/` (CRUD completo viene incluido por Django al registrar el modelo):
 
 ```python
 from django.contrib import admin
+from .models import Michi
+
+
+@admin.register(Michi)
+class MichiAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'tipo')
+    search_fields = ('nombre', 'tipo')
+
+    class Media:
+        css = {'all': ('registro/admin_light.css',)}
+```
+
+`registro/static/registro/admin_light.css` fuerza `color-scheme: only light` — el admin trae dark mode automático (según el SO) desde Django 3.2+, esto lo deja fijo en claro.
+
+Crear superusuario para acceder (comando interactivo, pide username/email/password — no hay credenciales fijas en el repo):
+
+```bash
+python manage.py createsuperuser
+```
+
+## Fase 7: Las Vistas (Views)
+
+Vistas genéricas (`ListView`/`DetailView`) para listar y ver detalle, más una vista con formulario en `registro/views.py`:
+
+```python
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django.views import generic
+
+from .forms import MichiForm
+from .models import Michi
+
+
+class ListaMichisView(generic.ListView):
+    template_name = 'registro/lista.html'
+    context_object_name = 'michis'
+
+    def get_queryset(self):
+        return Michi.objects.all()
+
+
+class DetalleMichiView(generic.DetailView):
+    model = Michi
+    template_name = 'registro/detalle.html'
+    context_object_name = 'michi'
+
+
+def agregar_michi(request):
+    if request.method == 'POST':
+        form = MichiForm(request.POST)
+        if form.is_valid():
+            michi = form.save()
+            return redirect(reverse('detalle_michi', args=(michi.id,)))
+    else:
+        form = MichiForm()
+    return render(request, 'registro/agregar.html', {
+        'form': form,
+        'titulo': 'Agregar michi',
+        'action_url': reverse('agregar_michi'),
+    })
+
+
+def editar_michi(request, pk):
+    michi = get_object_or_404(Michi, pk=pk)
+    if request.method == 'POST':
+        form = MichiForm(request.POST, instance=michi)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('detalle_michi', args=(michi.id,)))
+    else:
+        form = MichiForm(instance=michi)
+    return render(request, 'registro/agregar.html', {
+        'form': form,
+        'titulo': 'Editar michi',
+        'action_url': reverse('editar_michi', args=(michi.id,)),
+    })
+```
+
+## Fase 8: El Formulario (Forms)
+
+`ModelForm` en `registro/forms.py`, reutilizado por agregar y editar:
+
+```python
+from django import forms
+from .models import Michi
+
+class MichiForm(forms.ModelForm):
+    class Meta:
+        model = Michi
+        fields = ['nombre', 'tipo']
+```
+
+## Fase 9: Enrutamiento (URL Routing)
+
+`registro/urls.py`, incluido desde `avance_proyecto/urls.py` con `include()`:
+
+```python
+# registro/urls.py
 from django.urls import path
-from registro.views import lista_gatos
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('mis-gatos/', lista_gatos, name='lista_gatos'),
+    path('', views.ListaMichisView.as_view(), name='lista_michis'),
+    path('agregar/', views.agregar_michi, name='agregar_michi'),
+    path('<int:pk>/', views.DetalleMichiView.as_view(), name='detalle_michi'),
+    path('<int:pk>/editar/', views.editar_michi, name='editar_michi'),
 ]
 ```
 
-## Fase 8: La Presentación (Template)
+```python
+# avance_proyecto/urls.py
+from django.contrib import admin
+from django.urls import include, path
 
-Creación de la interfaz en `registro/templates/registro/lista.html`:
-
-```html
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Michis</title>
-  </head>
-  <body>
-    <h1>Registro MVT: Mis Gatos</h1>
-    <div>
-      {% for gato in gatos %}
-      <div><strong>{{ gato.nombre }}</strong> - Tipo: {{ gato.tipo }}</div>
-      {% empty %}
-      <p>No hay gatitos registrados todavía.</p>
-      {% endfor %}
-    </div>
-  </body>
-</html>
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('michis/', include('registro.urls')),
+]
 ```
 
-## Fase 9: Ejecución del Servidor
+## Fase 10: La Presentación (Templates)
+
+Templates en `registro/templates/registro/` (`base.html`, `lista.html`, `detalle.html`, `agregar.html`) usando Tailwind vía CDN, sin CSS propio — solo utilidades, incluyendo variantes `before:`/`after:` para el detalle decorativo de "orejas" en las tarjetas.
+
+## Fase 11: Ejecución del Servidor
 
 ```bash
 python manage.py runserver
 ```
 
-El navegador web la ruta `http://127.0.0.1:8000/mis-gatos/` para visualizar los datos renderizados y obtener un código de estado HTTP 200 exitoso.
+Rutas disponibles:
+
+- `http://127.0.0.1:8000/michis/` — listado
+- `http://127.0.0.1:8000/michis/<id>/` — detalle
+- `http://127.0.0.1:8000/michis/agregar/` — agregar
+- `http://127.0.0.1:8000/michis/<id>/editar/` — editar
+- `http://127.0.0.1:8000/admin/` — admin de Django

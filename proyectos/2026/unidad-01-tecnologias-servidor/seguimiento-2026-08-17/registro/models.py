@@ -1,6 +1,6 @@
 from django.db import models
 
-class Gato(models.Model):
+class Michi(models.Model):
     nombre = models.CharField(max_length=50)
     tipo = models.CharField(max_length=50) 
     
