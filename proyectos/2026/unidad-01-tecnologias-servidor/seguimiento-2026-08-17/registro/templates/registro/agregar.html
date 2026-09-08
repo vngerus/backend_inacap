@@ -7,7 +7,7 @@
 
     <h1 class="font-display text-3xl font-800 mt-4 mb-6">{{ titulo }}</h1>
 
-    <form action="{{ action_url }}" method="post" class="relative rounded-2xl bg-white p-8 shadow-sm border border-ink/5 max-w-sm space-y-4 before:content-[''] before:absolute before:-top-[0.55rem] before:left-[0.9rem] before:w-[1.1rem] before:h-[1.1rem] before:bg-white before:rounded-[9999px_9999px_0_9999px] before:-rotate-[25deg] after:content-[''] after:absolute after:-top-[0.55rem] after:right-[0.9rem] after:w-[1.1rem] after:h-[1.1rem] after:bg-white after:rounded-[9999px_9999px_0_9999px] after:rotate-[115deg]">
+    <form action="{{ action_url }}" method="post" enctype="multipart/form-data" class="relative rounded-2xl bg-white p-8 shadow-sm border border-ink/5 max-w-sm space-y-4 before:content-[''] before:absolute before:-top-[0.55rem] before:left-[0.9rem] before:w-[1.1rem] before:h-[1.1rem] before:bg-white before:rounded-[9999px_9999px_0_9999px] before:-rotate-[25deg] after:content-[''] after:absolute after:-top-[0.55rem] after:right-[0.9rem] after:w-[1.1rem] after:h-[1.1rem] after:bg-white after:rounded-[9999px_9999px_0_9999px] after:rotate-[115deg]">
         {% csrf_token %}
         {% for field in form %}
             <div>

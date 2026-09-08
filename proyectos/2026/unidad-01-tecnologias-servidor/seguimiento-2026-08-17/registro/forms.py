@@ -11,8 +11,10 @@ INPUT_CLASSES = (
 class MichiForm(forms.ModelForm):
     class Meta:
         model = Michi
-        fields = ['nombre', 'tipo']
+        fields = ['nombre', 'tipo', 'dueno', 'foto']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': INPUT_CLASSES}),
             'tipo': forms.TextInput(attrs={'class': INPUT_CLASSES}),
+            'dueno': forms.Select(attrs={'class': INPUT_CLASSES}),
+            'foto': forms.ClearableFileInput(attrs={'class': INPUT_CLASSES}),
         }

@@ -16,9 +16,15 @@
             </svg>
         </a>
 
+        {% if michi.foto %}
+            <img src="{{ michi.foto.url }}" alt="Foto de {{ michi.nombre }}" class="w-full h-40 object-cover rounded-xl mb-4">
+        {% endif %}
         <p class="font-display text-2xl font-800 pr-8">{{ michi.nombre }}</p>
         <p class="text-sm text-muted mt-2">
             <span class="inline-block bg-teal/10 text-teal font-medium px-2 py-0.5 rounded-full">{{ michi.tipo }}</span>
         </p>
+        {% if michi.dueno %}
+            <p class="text-sm text-muted mt-3">Dueño: <span class="text-ink font-medium">{{ michi.dueno.nombre }}</span></p>
+        {% endif %}
     </div>
 {% endblock %}

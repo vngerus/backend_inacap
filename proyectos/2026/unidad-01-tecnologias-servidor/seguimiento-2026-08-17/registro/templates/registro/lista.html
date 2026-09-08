@@ -12,6 +12,7 @@
                 <p class="font-display font-700 text-lg">{{ michi.nombre }}</p>
                 <p class="text-sm text-muted mt-1">
                     <span class="inline-block bg-teal/10 text-teal font-medium px-2 py-0.5 rounded-full">{{ michi.tipo }}</span>
+                    {% if michi.dueno %}<span class="text-xs text-muted ml-1">· {{ michi.dueno.nombre }}</span>{% endif %}
                 </p>
             </a>
         {% empty %}

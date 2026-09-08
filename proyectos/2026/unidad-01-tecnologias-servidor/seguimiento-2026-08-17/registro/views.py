@@ -22,7 +22,7 @@ class DetalleMichiView(generic.DetailView):
 
 def agregar_michi(request):
     if request.method == 'POST':
-        form = MichiForm(request.POST)
+        form = MichiForm(request.POST, request.FILES)
         if form.is_valid():
             michi = form.save()
             return redirect(reverse('detalle_michi', args=(michi.id,)))
@@ -40,7 +40,7 @@ def editar_michi(request, pk):
     michi = get_object_or_404(Michi, pk=pk)
 
     if request.method == 'POST':
-        form = MichiForm(request.POST, instance=michi)
+        form = MichiForm(request.POST, request.FILES, instance=michi)
         if form.is_valid():
             form.save()
             return redirect(reverse('detalle_michi', args=(michi.id,)))

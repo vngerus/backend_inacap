@@ -9,9 +9,11 @@ Para aislar el proyecto y evitar conflictos de paquetes:
 ```bash
 python -m venv venv
 source venv/Scripts/activate
-pip install django
+pip install django pillow
 pip freeze > requirements.txt
 ```
+
+`pillow` es requisito de Django para `ImageField` (Fase 3) — sin él, `makemigrations` falla.
 
 ## Fase 2: Iniciar Proyecto y Aplicación
 
@@ -24,18 +26,34 @@ _Configuración:_ Agregar `'registro'` a la lista `INSTALLED_APPS` en `avance_pr
 
 ## Fase 3: El Modelo (Model)
 
-Definición de la estructura de datos en `registro/models.py`:
+Definición de la estructura de datos en `registro/models.py`. `Michi` se relaciona con `Dueno` (`ForeignKey`, uno-a-muchos: un dueño puede tener varios michis) y usa `ImageField` (paquete externo **Pillow**, requerido por Django para campos de imagen) para la foto:
 
 ```python
 from django.db import models
 
+
+class Dueno(models.Model):
+    nombre = models.CharField(max_length=80)
+    telefono = models.CharField(max_length=20, blank=True)
+
+    def __str__(self):
+        return self.nombre
+
+
 class Michi(models.Model):
     nombre = models.CharField(max_length=50)
     tipo = models.CharField(max_length=50)
+    dueno = models.ForeignKey(
+        Dueno, on_delete=models.CASCADE, related_name='michis',
+        null=True, blank=True,
+    )
+    foto = models.ImageField(upload_to='michis/', blank=True, null=True)
 
     def __str__(self):
         return self.nombre
 ```
+
+`dueno`/`foto` son opcionales (`null=True, blank=True`) para no romper los datos de prueba existentes que no los traían.
 
 ## Fase 4: Migraciones
 
@@ -55,9 +73,10 @@ python manage.py shell
 ```
 
 ```python
-from registro.models import Michi
-Michi.objects.create(nombre="Luna", tipo="calicó")
-Michi.objects.create(nombre="Kimchi", tipo="naranja")
+from registro.models import Dueno, Michi
+ana = Dueno.objects.create(nombre="Ana", telefono="+56911111111")
+Michi.objects.create(nombre="Luna", tipo="calicó", dueno=ana)
+Michi.objects.create(nombre="Kimchi", tipo="naranja", dueno=ana)
 Michi.objects.create(nombre="Léa", tipo="tuxedo")
 exit()
 ```
@@ -205,3 +224,32 @@ Rutas disponibles:
 - `http://127.0.0.1:8000/michis/agregar/` — agregar
 - `http://127.0.0.1:8000/michis/<id>/editar/` — editar
 - `http://127.0.0.1:8000/admin/` — admin de Django
+
+## Fase 12: Correspondencia con MVC
+
+Django implementa el patrón **MVT** (Model-View-Template), variante de MVC:
+
+| MVC | MVT (Django) | Archivo en este proyecto |
+|---|---|---|
+| Model | Model | `registro/models.py` (`Michi`) |
+| Controller | View | `registro/views.py` |
+| View | Template | `registro/templates/registro/*.html` |
+
+El "Controller" de MVC lo asume el propio framework (URL dispatcher + View), por eso Django llama "View" a lo que en MVC es el Controller, y "Template" a lo que en MVC es la View. Misma separación de responsabilidades: el modelo no sabe de HTTP, la vista no arma HTML a mano, el template no consulta la base de datos.
+
+## Fase 13: Protocolos, hosting y dominios
+
+- **Protocolo:** en desarrollo local corre sobre HTTP plano (`runserver`). En producción se serviría sobre HTTPS (TLS) detrás de un proxy (nginx/Caddy) que termina el certificado y reenvía a Django vía WSGI/ASGI (`avance_proyecto/wsgi.py`).
+- **Hosting:** SQLite (archivo local `db.sqlite3`) sirve solo para desarrollo. `avance_proyecto/settings.py` ya lee `DJANGO_SECRET_KEY`, `DJANGO_DEBUG` y `DJANGO_ALLOWED_HOSTS` desde variables de entorno (con default de desarrollo si no están seteadas), así que para producción basta con exportarlas — sin tocar código — junto con un servidor de aplicación (gunicorn/uwsgi) y una base de datos gestionada (Postgres/MySQL) en vez de SQLite.
+- **Dominio:** el dominio público apuntaría (registro DNS tipo A/CNAME) a la IP del host donde corre el proxy; `ALLOWED_HOSTS` en `settings.py` debe incluir ese dominio o Django rechaza la petición.
+
+## Fase 14: Uso de IA
+
+Se usó IA (Claude Code) como apoyo en:
+
+- **Generación de datos de prueba** (`registro/tests.py`, `DATOS_PRUEBA`): 5 registros variados por tipo/pelaje, validados con `full_clean()` en `test_datos_prueba_son_validos` antes de darlos por buenos — no se usaron a ciegas.
+- **Modelado de relaciones**: sugerencia de agregar `Dueno` (FK desde `Michi`) para cubrir el contenido de "modelos y relaciones", verificada con `test_relacion_dueno_michis` (related_name `michis`) antes de aceptarla.
+- **Cobertura de tests**: vistas de listado/detalle/agregar/editar cubiertas en `RegistroViewsTests`, verificadas corriendo `python manage.py test registro` (8/8 pasando) en vez de solo confiar en la recomendación.
+- **Diseño de interfaz**: templates con Tailwind vía CDN (Fase 10).
+
+Toda sugerencia de IA se corrió y verificó localmente antes de incorporarse (migraciones aplicadas, tests ejecutados, servidor probado en `/michis/`).
