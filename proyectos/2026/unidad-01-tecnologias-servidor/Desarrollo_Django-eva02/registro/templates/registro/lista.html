@@ -1,0 +1,22 @@
+{% extends 'registro/base.html' %}
+
+{% block title %}Michis{% endblock %}
+
+{% block content %}
+    <h1 class="font-display text-3xl font-800 mb-8">Registro de michis</h1>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+        {% for michi in michis %}
+            <a href="{% url 'detalle_michi' michi.id %}"
+               class="relative rounded-2xl bg-white p-5 shadow-sm border border-ink/5 hover:shadow-md hover:-translate-y-0.5 transition-all before:content-[''] before:absolute before:-top-[0.55rem] before:left-[0.9rem] before:w-[1.1rem] before:h-[1.1rem] before:bg-white before:rounded-[9999px_9999px_0_9999px] before:-rotate-[25deg] after:content-[''] after:absolute after:-top-[0.55rem] after:right-[0.9rem] after:w-[1.1rem] after:h-[1.1rem] after:bg-white after:rounded-[9999px_9999px_0_9999px] after:rotate-[115deg]">
+                <p class="font-display font-700 text-lg">{{ michi.nombre }}</p>
+                <p class="text-sm text-muted mt-1">
+                    <span class="inline-block bg-teal/10 text-teal font-medium px-2 py-0.5 rounded-full">{{ michi.tipo }}</span>
+                    {% if michi.dueno %}<span class="text-xs text-muted ml-1">· {{ michi.dueno.nombre }}</span>{% endif %}
+                </p>
+            </a>
+        {% empty %}
+            <p class="text-muted col-span-2">No hay gatitos registrados todavía. <a href="{% url 'agregar_michi' %}" class="text-marmalade underline">Agrega uno</a>.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Michis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FFF8F0',
+                        ink: '#3A2E2A',
+                        marmalade: '#FF8C42',
+                        teal: '#4A7C6E',
+                        muted: '#A8998C',
+                    },
+                    fontFamily: {
+                        display: ['"Baloo 2"', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream text-ink font-body min-h-screen flex flex-col">
+    <header class="border-b-2 border-ink/10">
+        <div class="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">
+            <a href="{% url 'lista_michis' %}" class="font-display text-2xl font-800 text-ink flex items-center gap-2">
+                <span aria-hidden="true">🐾</span> Michis
+            </a>
+            <a href="{% url 'agregar_michi' %}" class="font-display font-700 text-sm bg-marmalade text-white px-4 py-2 rounded-full hover:bg-orange-500 transition-colors">
+                + Agregar michi
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 py-10 w-full flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="text-center text-xs text-muted py-6">
+        
+    </footer>
+</body>
+</html>

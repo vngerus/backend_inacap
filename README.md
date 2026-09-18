@@ -4,17 +4,20 @@ Repositorio general para los proyectos del ramo de backend.
 
 ## Estructura
 
-Los proyectos se organizan por año, unidad y fecha de seguimiento:
+Los proyectos se organizan por año, unidad, y carpeta por evaluación:
 
 ```text
 proyectos/
 └── 2026/
     └── unidad-01-tecnologias-servidor/
-        └── Desarrollo_Django-eva01/
+        ├── Desarrollo_Django-eva01/   # Evaluación 1 (Unidad 1) — cerrada
+        └── Desarrollo_Django-eva02/   # Evaluación 2 (Unidad 2) — en curso, parte de eva01
 ```
 
 Cada entrega Django es independiente y tiene su propio `manage.py`, configuración,
-aplicaciones, migraciones y base de datos local.
+aplicaciones, migraciones y base de datos local. `Desarrollo_Django-eva02` nace como
+copia de `Desarrollo_Django-eva01` en el punto donde esa evaluación quedó cerrada —
+`Desarrollo_Django-eva01` ya no se modifica.
 
 ## Entorno virtual
 
@@ -32,9 +35,9 @@ En Windows también se puede activar con:
 venv\Scripts\Activate.ps1
 ```
 
-## Ejecutar la entrega actual
+## Ejecutar una entrega
 
 ```bash
-cd proyectos/2026/unidad-01-tecnologias-servidor/Desarrollo_Django-eva01
+cd proyectos/2026/unidad-01-tecnologias-servidor/Desarrollo_Django-eva02  # o eva01
 python manage.py runserver
 ```

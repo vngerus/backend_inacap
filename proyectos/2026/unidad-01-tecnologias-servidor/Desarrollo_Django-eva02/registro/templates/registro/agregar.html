@@ -1,0 +1,25 @@
+{% extends 'registro/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+    <a href="{% url 'lista_michis' %}" class="text-sm text-muted hover:text-ink">&larr; Volver al listado</a>
+
+    <h1 class="font-display text-3xl font-800 mt-4 mb-6">{{ titulo }}</h1>
+
+    <form action="{{ action_url }}" method="post" enctype="multipart/form-data" class="relative rounded-2xl bg-white p-8 shadow-sm border border-ink/5 max-w-sm space-y-4 before:content-[''] before:absolute before:-top-[0.55rem] before:left-[0.9rem] before:w-[1.1rem] before:h-[1.1rem] before:bg-white before:rounded-[9999px_9999px_0_9999px] before:-rotate-[25deg] after:content-[''] after:absolute after:-top-[0.55rem] after:right-[0.9rem] after:w-[1.1rem] after:h-[1.1rem] after:bg-white after:rounded-[9999px_9999px_0_9999px] after:rotate-[115deg]">
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ field.errors|join:", " }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="font-display font-700 text-sm bg-marmalade text-white px-5 py-2.5 rounded-full hover:bg-orange-500 transition-colors w-full">
+            Guardar
+        </button>
+    </form>
+{% endblock %}
