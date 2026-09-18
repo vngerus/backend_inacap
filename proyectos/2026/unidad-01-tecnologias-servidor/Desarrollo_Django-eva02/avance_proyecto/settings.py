@@ -78,10 +78,17 @@ WSGI_APPLICATION = 'avance_proyecto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# MySQL vía Docker (contenedor `inacap_mysql`, equivalente a tener XAMPP corriendo
+# local). Driver: PyMySQL (puro Python, sin compilador C necesario en Windows) —
+# shim activado en avance_proyecto/__init__.py.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'michis_eva02'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'inacap'),
+        'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
+        'PORT': os.environ.get('DB_PORT', '3307'),
     }
 }
 
