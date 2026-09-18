@@ -8,3 +8,6 @@ __pycache__/
 .claude/
 .kiro/
 .agents/
+.codegraph/
+skills-lock.json
+material-referencial.md

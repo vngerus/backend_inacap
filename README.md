@@ -10,7 +10,7 @@ Los proyectos se organizan por año, unidad y fecha de seguimiento:
 proyectos/
 └── 2026/
     └── unidad-01-tecnologias-servidor/
-        └── seguimiento-2026-08-17/
+        └── Desarrollo_Django-eva01/
 ```
 
 Cada entrega Django es independiente y tiene su propio `manage.py`, configuración,
@@ -35,6 +35,6 @@ venv\Scripts\Activate.ps1
 ## Ejecutar la entrega actual
 
 ```bash
-cd proyectos/2026/unidad-01-tecnologias-servidor/seguimiento-2026-08-17
+cd proyectos/2026/unidad-01-tecnologias-servidor/Desarrollo_Django-eva01
 python manage.py runserver
 ```
