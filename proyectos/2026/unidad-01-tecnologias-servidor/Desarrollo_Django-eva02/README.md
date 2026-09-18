@@ -276,19 +276,17 @@ python manage.py createsuperuser  # o cualquier usuario vía shell/admin
 - Sesión persiste vía `django.contrib.sessions` (cookie de sesión, backend default de Django — sin configuración extra).
 - `python manage.py test registro` — 15/15 tests pasando, incluye `AutenticacionTests` (anónimo redirigido a login, usuario autenticado puede operar).
 
-## Fase 17: Base de datos — MySQL vía Docker
+## Fase 17: Base de datos — PostgreSQL vía Docker
 
-Cambio de motor pedido por el curso (MySQL/XAMPP). En vez de instalar XAMPP, se usa un contenedor Docker equivalente (mismo resultado: un MySQL escuchando en `localhost`):
+Rama `Desarrollo_Django-eva02-postgres`, bifurcada desde `Desarrollo_Django-eva02` (que usa MySQL, ver su propio README) justo después de cerrar CRUD+auth. Cambio de motor pedido por el curso — mismo `registro` app, mismos modelos y migraciones, solo cambia `DATABASES`:
 
 ```bash
-docker run -d --name inacap_mysql -p 3307:3306 \
-  -e MYSQL_ROOT_PASSWORD=inacap -e MYSQL_DATABASE=michis_eva02 \
-  mysql:8.0
+docker run -d --name inacap_postgres -p 5433:5432 \
+  -e POSTGRES_PASSWORD=inacap -e POSTGRES_DB=michis_eva02 \
+  postgres:16
 ```
 
-- `avance_proyecto/settings.py`: `DATABASES['default']` apunta a MySQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
-- Driver: `PyMySQL` (puro Python, no requiere compilador C en Windows como sí pide `mysqlclient`). Shim `pymysql.install_as_MySQLdb()` en `avance_proyecto/__init__.py` — Django solo sabe hablar con la API de `MySQLdb`.
-- Puerto `3307` (no `3306`) para no chocar con otro contenedor MySQL ya en uso en esta máquina para otro proyecto.
-- Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el MySQL real del contenedor, no SQLite.
-
-La rama `Desarrollo_Django-eva02-postgres` parte de este mismo punto y cambia el motor a PostgreSQL.
+- `avance_proyecto/settings.py`: `DATABASES['default']` apunta a PostgreSQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
+- Driver: `psycopg2-binary` (wheel precompilado, sin compilador C en Windows). A diferencia de MySQL, Postgres no necesita shim en `avance_proyecto/__init__.py` (se dejó vacío en esta rama).
+- Puerto `5433` (no `5432`) para no chocar con otro contenedor Postgres ya en uso en esta máquina para otro proyecto.
+- Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el Postgres real del contenedor.
