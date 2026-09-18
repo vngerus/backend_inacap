@@ -1,0 +1,17 @@
+name: inacap-eva02-postgres
+
+services:
+  db:
+    image: postgres:16
+    container_name: inacap_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: inacap
+      POSTGRES_DB: michis_eva02
+    ports:
+      - "5433:5432"
+    volumes:
+      - inacap_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  inacap_postgres_data:

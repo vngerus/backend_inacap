@@ -278,14 +278,13 @@ python manage.py createsuperuser  # o cualquier usuario vía shell/admin
 
 ## Fase 17: Base de datos — PostgreSQL vía Docker
 
-Rama `Desarrollo_Django-eva02-postgres`, bifurcada desde `Desarrollo_Django-eva02` (que usa MySQL, ver su propio README) justo después de cerrar CRUD+auth. Cambio de motor pedido por el curso — mismo `registro` app, mismos modelos y migraciones, solo cambia `DATABASES`:
+Rama `Desarrollo_Django-eva02-postgres`, bifurcada desde `Desarrollo_Django-eva02` (que usa MySQL, ver su propio README) justo después de cerrar CRUD+auth. Cambio de motor pedido por el curso — mismo `registro` app, mismos modelos y migraciones, solo cambia `DATABASES`. Servicio definido en `docker-compose.yml` (junto a `manage.py`, en esta misma carpeta):
 
 ```bash
-docker run -d --name inacap_postgres -p 5433:5432 \
-  -e POSTGRES_PASSWORD=inacap -e POSTGRES_DB=michis_eva02 \
-  postgres:16
+docker compose up -d
 ```
 
+- `docker-compose.yml`: servicio `db` (Postgres 16), puerto `5433:5432`, credenciales y volumen con nombre (`inacap_postgres_data`).
 - `avance_proyecto/settings.py`: `DATABASES['default']` apunta a PostgreSQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
 - Driver: `psycopg2-binary` (wheel precompilado, sin compilador C en Windows). A diferencia de MySQL, Postgres no necesita shim en `avance_proyecto/__init__.py` (se dejó vacío en esta rama).
 - Puerto `5433` (no `5432`) para no chocar con otro contenedor Postgres ya en uso en esta máquina para otro proyecto.
