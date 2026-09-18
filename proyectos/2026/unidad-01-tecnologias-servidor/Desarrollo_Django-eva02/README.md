@@ -291,4 +291,8 @@ docker run -d --name inacap_mysql -p 3307:3306 \
 - Puerto `3307` (no `3306`) para no chocar con otro contenedor MySQL ya en uso en esta máquina para otro proyecto.
 - Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el MySQL real del contenedor, no SQLite.
 
-La rama `Desarrollo_Django-eva02-postgres` parte de este mismo punto y cambia el motor a PostgreSQL.
+La rama `Desarrollo_Django-eva02-postgres` parte de este mismo punto y cambia el motor a PostgreSQL:
+
+```bash
+git checkout Desarrollo_Django-eva02-postgres
+```
