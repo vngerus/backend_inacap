@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
@@ -40,6 +41,8 @@ class MichiModelTests(TestCase):
 class RegistroViewsTests(TestCase):
     def setUp(self):
         self.michi = Michi.objects.create(nombre="Luna", tipo="calico")
+        user = User.objects.create_user(username='ana', password='clave-segura-123')
+        self.client.force_login(user)
 
     def test_lista_michis_ok(self):
         response = self.client.get(reverse('lista_michis'))
@@ -66,3 +69,48 @@ class RegistroViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.michi.refresh_from_db()
         self.assertEqual(self.michi.tipo, 'blanco y negro')
+
+    def test_eliminar_michi_post(self):
+        response = self.client.post(reverse('eliminar_michi', args=(self.michi.id,)))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Michi.objects.filter(id=self.michi.id).exists())
+
+    def test_eliminar_michi_get_muestra_confirmacion(self):
+        response = self.client.get(reverse('eliminar_michi', args=(self.michi.id,)))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.michi.nombre)
+
+
+
+class AutenticacionTests(TestCase):
+    def setUp(self):
+        self.michi = Michi.objects.create(nombre="Luna", tipo="calico")
+        self.user = User.objects.create_user(username='ana', password='clave-segura-123')
+
+    def test_anonimo_no_puede_agregar(self):
+        response = self.client.get(reverse('agregar_michi'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+
+    def test_anonimo_no_puede_editar(self):
+        response = self.client.get(reverse('editar_michi', args=(self.michi.id,)))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+
+    def test_anonimo_no_puede_eliminar(self):
+        response = self.client.post(reverse('eliminar_michi', args=(self.michi.id,)))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/', response.url)
+
+    def test_usuario_autenticado_puede_agregar(self):
+        self.client.login(username='ana', password='clave-segura-123')
+        response = self.client.get(reverse('agregar_michi'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_logout_flow(self):
+        response = self.client.post(reverse('login'), {
+            'username': 'ana', 'password': 'clave-segura-123',
+        })
+        self.assertEqual(response.status_code, 302)
+        response = self.client.post(reverse('logout'))
+        self.assertEqual(response.status_code, 302)

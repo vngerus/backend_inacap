@@ -33,9 +33,19 @@
             <a href="{% url 'lista_michis' %}" class="font-display text-2xl font-800 text-ink flex items-center gap-2">
                 <span aria-hidden="true">🐾</span> Michis
             </a>
-            <a href="{% url 'agregar_michi' %}" class="font-display font-700 text-sm bg-marmalade text-white px-4 py-2 rounded-full hover:bg-orange-500 transition-colors">
-                + Agregar michi
-            </a>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'agregar_michi' %}" class="font-display font-700 text-sm bg-marmalade text-white px-4 py-2 rounded-full hover:bg-orange-500 transition-colors">
+                    + Agregar michi
+                </a>
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-sm text-muted hover:text-ink">Salir ({{ user.username }})</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-sm text-muted hover:text-ink">Entrar</a>
+                {% endif %}
+            </div>
         </div>
     </header>
 

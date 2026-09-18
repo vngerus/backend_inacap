@@ -253,3 +253,25 @@ Se usó IA (Claude Code) como apoyo en:
 - **Diseño de interfaz**: templates con Tailwind vía CDN (Fase 10).
 
 Toda sugerencia de IA se corrió y verificó localmente antes de incorporarse (migraciones aplicadas, tests ejecutados, servidor probado en `/michis/`).
+
+## Fase 15: CRUD completo — Delete
+
+Se agregó la operación que faltaba (`MichiDeleteView`, `generic.DeleteView`) para completar Create/Read/Update/**Delete**:
+
+- `registro/views.py`: `MichiDeleteView`.
+- `registro/urls.py`: `<int:pk>/eliminar/`.
+- `registro/templates/registro/confirmar_eliminar.html`: confirmación antes de borrar (evita delete accidental por GET).
+
+## Fase 16: Sesiones y autenticación
+
+Rutas de **lectura** (`lista_michis`, `detalle_michi`) siguen públicas. Rutas de **escritura** (`agregar_michi`, `editar_michi`, `eliminar_michi`) ahora requieren sesión iniciada:
+
+```bash
+python manage.py createsuperuser  # o cualquier usuario vía shell/admin
+```
+
+- `django.contrib.auth` ya venía en `INSTALLED_APPS`/`MIDDLEWARE` (default de Django) — se usó tal cual, sin dependencias nuevas.
+- `@login_required` en las vistas function-based (`agregar_michi`, `editar_michi`); `LoginRequiredMixin` en `MichiDeleteView`.
+- `LOGIN_URL`/`LOGIN_REDIRECT_URL`/`LOGOUT_REDIRECT_URL` en `settings.py` — redirige a `/accounts/login/` y de vuelta al listado.
+- Sesión persiste vía `django.contrib.sessions` (cookie de sesión, backend default de Django — sin configuración extra).
+- `python manage.py test registro` — 15/15 tests pasando, incluye `AutenticacionTests` (anónimo redirigido a login, usuario autenticado puede operar).

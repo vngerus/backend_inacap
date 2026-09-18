@@ -1,0 +1,29 @@
+{% extends 'registro/base.html' %}
+
+{% block title %}Iniciar sesión · Michis{% endblock %}
+
+{% block content %}
+    <div class="max-w-sm rounded-2xl bg-white p-8 shadow-sm border border-ink/5">
+        <p class="font-display text-xl font-800 mb-6">Iniciar sesión</p>
+
+        {% if form.errors %}
+            <p class="text-sm text-red-500 mb-4">Usuario o contraseña incorrectos.</p>
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium mb-1" for="{{ form.username.id_for_label }}">Usuario</label>
+                {{ form.username }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1" for="{{ form.password.id_for_label }}">Contraseña</label>
+                {{ form.password }}
+            </div>
+            <button type="submit"
+                    class="font-display font-700 text-sm bg-marmalade text-white px-4 py-2 rounded-full hover:bg-orange-500 transition-colors">
+                Entrar
+            </button>
+        </form>
+    </div>
+{% endblock %}

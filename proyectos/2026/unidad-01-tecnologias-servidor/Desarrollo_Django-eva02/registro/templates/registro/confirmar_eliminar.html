@@ -1,0 +1,22 @@
+{% extends 'registro/base.html' %}
+
+{% block title %}Eliminar {{ michi.nombre }} · Michis{% endblock %}
+
+{% block content %}
+    <div class="max-w-sm rounded-2xl bg-white p-8 shadow-sm border border-ink/5">
+        <p class="font-display text-xl font-800 mb-2">¿Eliminar a {{ michi.nombre }}?</p>
+        <p class="text-sm text-muted mb-6">Esta acción no se puede deshacer.</p>
+
+        <form method="post" class="flex gap-3">
+            {% csrf_token %}
+            <button type="submit"
+                    class="font-display font-700 text-sm bg-marmalade text-white px-4 py-2 rounded-full hover:bg-orange-500 transition-colors">
+                Sí, eliminar
+            </button>
+            <a href="{% url 'detalle_michi' michi.id %}"
+               class="font-display font-700 text-sm px-4 py-2 rounded-full text-ink hover:bg-ink/5 transition-colors">
+                Cancelar
+            </a>
+        </form>
+    </div>
+{% endblock %}

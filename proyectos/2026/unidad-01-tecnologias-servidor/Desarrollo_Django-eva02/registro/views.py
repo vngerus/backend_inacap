@@ -1,5 +1,7 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 
 from .forms import MichiForm
@@ -20,6 +22,7 @@ class DetalleMichiView(generic.DetailView):
     context_object_name = 'michi'
 
 
+@login_required
 def agregar_michi(request):
     if request.method == 'POST':
         form = MichiForm(request.POST, request.FILES)
@@ -36,6 +39,7 @@ def agregar_michi(request):
     })
 
 
+@login_required
 def editar_michi(request, pk):
     michi = get_object_or_404(Michi, pk=pk)
 
@@ -52,3 +56,10 @@ def editar_michi(request, pk):
         'titulo': 'Editar michi',
         'action_url': reverse('editar_michi', args=(michi.id,)),
     })
+
+
+class MichiDeleteView(LoginRequiredMixin, generic.DeleteView):
+    model = Michi
+    template_name = 'registro/confirmar_eliminar.html'
+    context_object_name = 'michi'
+    success_url = reverse_lazy('lista_michis')
