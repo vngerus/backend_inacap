@@ -1,0 +1,17 @@
+name: inacap-eva02-mysql
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: inacap_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: inacap
+      MYSQL_DATABASE: michis_eva02
+    ports:
+      - "3307:3306"
+    volumes:
+      - inacap_mysql_data:/var/lib/mysql
+
+volumes:
+  inacap_mysql_data:

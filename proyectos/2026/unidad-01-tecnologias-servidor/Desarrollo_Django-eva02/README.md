@@ -278,14 +278,13 @@ python manage.py createsuperuser  # o cualquier usuario vía shell/admin
 
 ## Fase 17: Base de datos — MySQL vía Docker
 
-Cambio de motor pedido por el curso (MySQL/XAMPP). En vez de instalar XAMPP, se usa un contenedor Docker equivalente (mismo resultado: un MySQL escuchando en `localhost`):
+Cambio de motor pedido por el curso (MySQL/XAMPP). En vez de instalar XAMPP, se usa un contenedor Docker equivalente (mismo resultado: un MySQL escuchando en `localhost`), definido en `docker-compose.yml` (junto a `manage.py`, en esta misma carpeta):
 
 ```bash
-docker run -d --name inacap_mysql -p 3307:3306 \
-  -e MYSQL_ROOT_PASSWORD=inacap -e MYSQL_DATABASE=michis_eva02 \
-  mysql:8.0
+docker compose up -d
 ```
 
+- `docker-compose.yml`: servicio `db` (MySQL 8.0), puerto `3307:3306`, credenciales y volumen con nombre (`inacap_mysql_data`) para no perder datos entre reinicios.
 - `avance_proyecto/settings.py`: `DATABASES['default']` apunta a MySQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
 - Driver: `PyMySQL` (puro Python, no requiere compilador C en Windows como sí pide `mysqlclient`). Shim `pymysql.install_as_MySQLdb()` en `avance_proyecto/__init__.py` — Django solo sabe hablar con la API de `MySQLdb`.
 - Puerto `3307` (no `3306`) para no chocar con otro contenedor MySQL ya en uso en esta máquina para otro proyecto.

@@ -66,11 +66,8 @@ python manage.py runserver
 ### Evaluación 2 — MySQL (rama `main`)
 
 ```bash
-docker run -d --name inacap_mysql -p 3307:3306 \
-  -e MYSQL_ROOT_PASSWORD=inacap -e MYSQL_DATABASE=michis_eva02 \
-  mysql:8.0
-
 cd proyectos/2026/unidad-01-tecnologias-servidor/Desarrollo_Django-eva02
+docker compose up -d
 python manage.py migrate
 python manage.py test registro
 python manage.py runserver
@@ -81,11 +78,8 @@ python manage.py runserver
 ```bash
 git checkout Desarrollo_Django-eva02-postgres
 
-docker run -d --name inacap_postgres -p 5433:5432 \
-  -e POSTGRES_PASSWORD=inacap -e POSTGRES_DB=michis_eva02 \
-  postgres:16
-
 cd proyectos/2026/unidad-01-tecnologias-servidor/Desarrollo_Django-eva02
+docker compose up -d
 python manage.py migrate
 python manage.py test registro
 python manage.py runserver
