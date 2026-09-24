@@ -295,3 +295,12 @@ La rama `Desarrollo_Django-eva02-postgres` parte de este mismo punto y cambia el
 ```bash
 git checkout Desarrollo_Django-eva02-postgres
 ```
+
+## Fase 18: Endurecimiento a nivel Destacado (CRUD, backend y sesiones)
+
+Cierra los tres indicadores que quedaban en "Logrado" para empujarlos a "Destacado":
+
+- **CRUD robusto (2.1.3)** — `registro/forms.py`: `clean_nombre`/`clean_tipo` rechazan strings vacíos o solo espacios; `clean_foto` valida tamaño máximo (5 MB). Antes solo se apoyaba en las validaciones automáticas del `ModelForm`.
+- **Backend modular (2.1.4)** — `registro/views.py`: `agregar_michi`/`editar_michi` (function-based) pasaron a `AgregarMichiView`/`EditarMichiView` (`generic.CreateView`/`UpdateView`), compartiendo `MichiFormViewMixin` con el `DeleteView` ya existente. Las 3 vistas de escritura ahora tienen el mismo estilo class-based, mismo patrón `LoginRequiredMixin`, menos duplicación (template/contexto compartido).
+- **Sesiones con expiración (Actividad General)** — `avance_proyecto/settings.py`: `SESSION_COOKIE_AGE = 1800` (30 min), `SESSION_EXPIRE_AT_BROWSER_CLOSE = True`, `SESSION_SAVE_EVERY_REQUEST = True` (renueva el timer en cada request).
+- Verificado: `python manage.py test registro` — 19/19 tests pasando (4 nuevos: validación de formulario ×3, política de sesión ×1) contra el MySQL real del contenedor.
