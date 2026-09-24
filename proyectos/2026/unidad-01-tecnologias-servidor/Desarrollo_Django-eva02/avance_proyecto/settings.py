@@ -78,16 +78,17 @@ WSGI_APPLICATION = 'avance_proyecto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# PostgreSQL vía Docker (contenedor `inacap_postgres`). Driver: psycopg2-binary
-# (wheel precompilado, sin compilador C necesario en Windows).
+# MySQL vía Docker (contenedor `inacap_mysql`, equivalente a tener XAMPP corriendo
+# local). Driver: PyMySQL (puro Python, sin compilador C necesario en Windows) —
+# shim activado en avance_proyecto/__init__.py.
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DB_NAME', 'michis_eva02'),
-        'USER': os.environ.get('DB_USER', 'postgres'),
+        'USER': os.environ.get('DB_USER', 'root'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'inacap'),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('DB_PORT', '5433'),
+        'PORT': os.environ.get('DB_PORT', '3307'),
     }
 }
 
@@ -141,10 +142,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'lista_michis'
 LOGOUT_REDIRECT_URL = 'lista_michis'
-
-# Política de expiración de sesión: 30 min de inactividad, cierra al cerrar el
-# navegador, y cada request renueva el timer (evita que una sesión abierta
-# indefinidamente quede válida para siempre).
-SESSION_COOKIE_AGE = 1800
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True

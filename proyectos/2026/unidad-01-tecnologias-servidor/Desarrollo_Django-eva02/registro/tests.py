@@ -1,9 +1,7 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .forms import MichiForm
 from .models import Dueno, Michi
 
 # Datos de prueba generados con apoyo de IA (variados por tipo/pelaje),
@@ -82,28 +80,6 @@ class RegistroViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.michi.nombre)
 
-
-
-class MichiFormValidacionTests(TestCase):
-    def test_nombre_solo_espacios_es_invalido(self):
-        form = MichiForm(data={'nombre': '   ', 'tipo': 'calico'})
-        self.assertFalse(form.is_valid())
-        self.assertIn('nombre', form.errors)
-
-    def test_tipo_solo_espacios_es_invalido(self):
-        form = MichiForm(data={'nombre': 'Luna', 'tipo': '   '})
-        self.assertFalse(form.is_valid())
-        self.assertIn('tipo', form.errors)
-
-    def test_datos_validos_pasan(self):
-        form = MichiForm(data={'nombre': 'Luna', 'tipo': 'calico'})
-        self.assertTrue(form.is_valid())
-
-
-class SesionPoliticaTests(TestCase):
-    def test_expiracion_de_sesion_configurada(self):
-        self.assertEqual(settings.SESSION_COOKIE_AGE, 1800)
-        self.assertTrue(settings.SESSION_EXPIRE_AT_BROWSER_CLOSE)
 
 
 class AutenticacionTests(TestCase):

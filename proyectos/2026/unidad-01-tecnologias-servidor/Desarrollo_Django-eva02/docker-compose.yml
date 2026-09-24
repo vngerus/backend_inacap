@@ -1,17 +1,17 @@
-name: inacap-eva02-postgres
+name: inacap-eva02-mysql
 
 services:
   db:
-    image: postgres:16
-    container_name: inacap_postgres
+    image: mysql:8.0
+    container_name: inacap_mysql
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: inacap
-      POSTGRES_DB: michis_eva02
+      MYSQL_ROOT_PASSWORD: inacap
+      MYSQL_DATABASE: michis_eva02
     ports:
-      - "5433:5432"
+      - "3307:3306"
     volumes:
-      - inacap_postgres_data:/var/lib/postgresql/data
+      - inacap_mysql_data:/var/lib/mysql
 
 volumes:
-  inacap_postgres_data:
+  inacap_mysql_data:
