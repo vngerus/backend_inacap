@@ -32,7 +32,7 @@
 **Interfaces:**
 - Produces: URL name `eliminar_michi` (pattern `<int:pk>/eliminar/`), vista `MichiDeleteView` (class-based, `generic.DeleteView`).
 
-- [ ] **Step 1: Escribir el test que falla**
+- [x] **Step 1: Escribir el test que falla**
 
 Agregar al final de `RegistroViewsTests` en `registro/tests.py`:
 
@@ -48,12 +48,12 @@ Agregar al final de `RegistroViewsTests` en `registro/tests.py`:
         self.assertContains(response, self.michi.nombre)
 ```
 
-- [ ] **Step 2: Correr los tests y verificar que fallan**
+- [x] **Step 2: Correr los tests y verificar que fallan**
 
 Run: `python manage.py test registro -v 2`
 Expected: `FAIL` — `NoReverseMatch: Reverse for 'eliminar_michi' not found`
 
-- [ ] **Step 3: Agregar la vista `MichiDeleteView`**
+- [x] **Step 3: Agregar la vista `MichiDeleteView`**
 
 En `registro/views.py`, agregar el import de `reverse_lazy` y la clase al final del archivo:
 
@@ -71,7 +71,7 @@ class MichiDeleteView(generic.DeleteView):
     success_url = reverse_lazy('lista_michis')
 ```
 
-- [ ] **Step 4: Agregar la URL**
+- [x] **Step 4: Agregar la URL**
 
 En `registro/urls.py`, agregar antes del cierre de la lista:
 
@@ -81,7 +81,7 @@ En `registro/urls.py`, agregar antes del cierre de la lista:
 
 (el archivo completo queda con 5 rutas: lista, agregar, detalle, editar, eliminar)
 
-- [ ] **Step 5: Crear el template de confirmación**
+- [x] **Step 5: Crear el template de confirmación**
 
 Crear `registro/templates/registro/confirmar_eliminar.html`:
 
@@ -110,7 +110,7 @@ Crear `registro/templates/registro/confirmar_eliminar.html`:
 {% endblock %}
 ```
 
-- [ ] **Step 6: Enlazar el botón de eliminar desde el detalle**
+- [x] **Step 6: Enlazar el botón de eliminar desde el detalle**
 
 En `registro/templates/registro/detalle.html`, agregar después del link de editar (después del `</a>` que cierra el link "Editar", línea 17):
 
@@ -127,12 +127,12 @@ En `registro/templates/registro/detalle.html`, agregar después del link de edit
         </a>
 ```
 
-- [ ] **Step 7: Correr los tests y verificar que pasan**
+- [x] **Step 7: Correr los tests y verificar que pasan**
 
 Run: `python manage.py test registro -v 2`
 Expected: `OK` (10 tests)
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add registro/views.py registro/urls.py registro/templates/registro/confirmar_eliminar.html registro/templates/registro/detalle.html registro/tests.py
@@ -155,7 +155,7 @@ git commit -m "feat: agregar Delete al CRUD de Michi"
 - Consumes: `MichiDeleteView` de Task 1 (se le agrega `LoginRequiredMixin`).
 - Produces: URL names `login`, `logout` (via `django.contrib.auth.urls` / `auth_views`); `settings.LOGIN_URL`, `LOGIN_REDIRECT_URL`, `LOGOUT_REDIRECT_URL`.
 
-- [ ] **Step 1: Escribir los tests que fallan**
+- [x] **Step 1: Escribir los tests que fallan**
 
 Agregar al final de `registro/tests.py`, nueva clase:
 
@@ -197,12 +197,12 @@ class AutenticacionTests(TestCase):
         self.assertEqual(response.status_code, 302)
 ```
 
-- [ ] **Step 2: Correr los tests y verificar que fallan**
+- [x] **Step 2: Correr los tests y verificar que fallan**
 
 Run: `python manage.py test registro -v 2`
 Expected: `FAIL` — `NoReverseMatch: Reverse for 'login' not found`
 
-- [ ] **Step 3: Configurar settings de auth**
+- [x] **Step 3: Configurar settings de auth**
 
 En `avance_proyecto/settings.py`, agregar al final del archivo:
 
@@ -213,7 +213,7 @@ LOGIN_REDIRECT_URL = 'lista_michis'
 LOGOUT_REDIRECT_URL = 'lista_michis'
 ```
 
-- [ ] **Step 4: Agregar las URLs de auth**
+- [x] **Step 4: Agregar las URLs de auth**
 
 En `avance_proyecto/urls.py`, agregar el import y la ruta:
 
@@ -230,7 +230,7 @@ from django.contrib.auth import views as auth_views
 
 (agregar estas dos líneas a `urlpatterns`, antes de `path('michis/', include('registro.urls'))`)
 
-- [ ] **Step 5: Proteger las vistas de escritura**
+- [x] **Step 5: Proteger las vistas de escritura**
 
 En `registro/views.py`, agregar imports:
 
@@ -261,7 +261,7 @@ class MichiDeleteView(LoginRequiredMixin, generic.DeleteView):
     success_url = reverse_lazy('lista_michis')
 ```
 
-- [ ] **Step 6: Crear el template de login**
+- [x] **Step 6: Crear el template de login**
 
 Crear `registro/templates/registro/login.html`:
 
@@ -299,7 +299,7 @@ Crear `registro/templates/registro/login.html`:
 
 `{{ form.username }}`/`{{ form.password }}` renderizan `<input>` sin clases Tailwind (Django `AuthenticationForm` no acepta `widgets` custom sin subclasear el form) — visualmente simple pero funcional; no bloquea ningún criterio de la pauta.
 
-- [ ] **Step 7: Agregar login/logout a la navegación**
+- [x] **Step 7: Agregar login/logout a la navegación**
 
 En `registro/templates/registro/base.html`, dentro del `<div class="max-w-3xl mx-auto px-6 py-5 flex items-center justify-between">` (línea 32), después del link "+ Agregar michi" (línea 38, antes del `</div>` de cierre en línea 39):
 
@@ -314,12 +314,12 @@ En `registro/templates/registro/base.html`, dentro del `<div class="max-w-3xl mx
             {% endif %}
 ```
 
-- [ ] **Step 8: Correr los tests y verificar que pasan**
+- [x] **Step 8: Correr los tests y verificar que pasan**
 
 Run: `python manage.py test registro -v 2`
 Expected: `OK` (15 tests)
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add avance_proyecto/settings.py avance_proyecto/urls.py registro/views.py registro/templates/registro/login.html registro/templates/registro/base.html registro/tests.py
@@ -336,7 +336,7 @@ git commit -m "feat: agregar login/logout y proteger rutas de escritura"
 **Interfaces:**
 - Consumes: nada de código — solo documenta lo hecho en Task 1 y 2.
 
-- [ ] **Step 1: Agregar Fase 15 y 16 al README**
+- [x] **Step 1: Agregar Fase 15 y 16 al README**
 
 Al final de `README.md` (después de la Fase 14 "Uso de IA", línea 255), agregar:
 
@@ -364,7 +364,7 @@ python manage.py createsuperuser  # o cualquier usuario vía shell/admin
 - Sesión persiste vía `django.contrib.sessions` (cookie de sesión, backend default de Django — sin configuración extra).
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add README.md

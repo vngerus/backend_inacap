@@ -289,3 +289,12 @@ docker compose up -d
 - Driver: `psycopg2-binary` (wheel precompilado, sin compilador C en Windows). A diferencia de MySQL, Postgres no necesita shim en `avance_proyecto/__init__.py` (se dejó vacío en esta rama).
 - Puerto `5433` (no `5432`) para no chocar con otro contenedor Postgres ya en uso en esta máquina para otro proyecto.
 - Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el Postgres real del contenedor.
+
+## Fase 18: Endurecimiento a nivel Destacado (CRUD, backend y sesiones)
+
+Cierra los tres indicadores que quedaban en "Logrado" para empujarlos a "Destacado":
+
+- **CRUD robusto (2.1.3)** — `registro/forms.py`: `clean_nombre`/`clean_tipo` rechazan strings vacíos o solo espacios; `clean_foto` valida tamaño máximo (5 MB). Antes solo se apoyaba en las validaciones automáticas del `ModelForm`.
+- **Backend modular (2.1.4)** — `registro/views.py`: `agregar_michi`/`editar_michi` (function-based) pasaron a `AgregarMichiView`/`EditarMichiView` (`generic.CreateView`/`UpdateView`), compartiendo `MichiFormViewMixin` con el `DeleteView` ya existente. Las 3 vistas de escritura ahora tienen el mismo estilo class-based, mismo patrón `LoginRequiredMixin`, menos duplicación (template/contexto compartido).
+- **Sesiones con expiración (Actividad General)** — `avance_proyecto/settings.py`: `SESSION_COOKIE_AGE = 1800` (30 min), `SESSION_EXPIRE_AT_BROWSER_CLOSE = True`, `SESSION_SAVE_EVERY_REQUEST = True` (renueva el timer en cada request).
+- Verificado: `python manage.py test registro` — 19/19 tests pasando (4 nuevos: validación de formulario ×3, política de sesión ×1), URLs de agregar/editar/eliminar probadas manualmente contra el servidor de desarrollo.

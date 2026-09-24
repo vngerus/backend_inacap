@@ -141,3 +141,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'lista_michis'
 LOGOUT_REDIRECT_URL = 'lista_michis'
+
+# Política de expiración de sesión: 30 min de inactividad, cierra al cerrar el
+# navegador, y cada request renueva el timer (evita que una sesión abierta
+# indefinidamente quede válida para siempre).
+SESSION_COOKIE_AGE = 1800
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
