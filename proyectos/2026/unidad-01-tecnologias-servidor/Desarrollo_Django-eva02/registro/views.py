@@ -1,6 +1,4 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
@@ -22,40 +20,32 @@ class DetalleMichiView(generic.DetailView):
     context_object_name = 'michi'
 
 
-@login_required
-def agregar_michi(request):
-    if request.method == 'POST':
-        form = MichiForm(request.POST, request.FILES)
-        if form.is_valid():
-            michi = form.save()
-            return redirect(reverse('detalle_michi', args=(michi.id,)))
-    else:
-        form = MichiForm()
+class MichiFormViewMixin:
+    """Comparte template y contexto entre alta y edición (evita duplicación)."""
+    model = Michi
+    form_class = MichiForm
+    template_name = 'registro/agregar.html'
 
-    return render(request, 'registro/agregar.html', {
-        'form': form,
-        'titulo': 'Agregar michi',
-        'action_url': reverse('agregar_michi'),
-    })
+    def get_success_url(self):
+        return reverse('detalle_michi', args=(self.object.id,))
 
 
-@login_required
-def editar_michi(request, pk):
-    michi = get_object_or_404(Michi, pk=pk)
+class AgregarMichiView(LoginRequiredMixin, MichiFormViewMixin, generic.CreateView):
+    extra_context = {'titulo': 'Agregar michi'}
 
-    if request.method == 'POST':
-        form = MichiForm(request.POST, request.FILES, instance=michi)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('detalle_michi', args=(michi.id,)))
-    else:
-        form = MichiForm(instance=michi)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action_url'] = reverse('agregar_michi')
+        return context
 
-    return render(request, 'registro/agregar.html', {
-        'form': form,
-        'titulo': 'Editar michi',
-        'action_url': reverse('editar_michi', args=(michi.id,)),
-    })
+
+class EditarMichiView(LoginRequiredMixin, MichiFormViewMixin, generic.UpdateView):
+    extra_context = {'titulo': 'Editar michi'}
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action_url'] = reverse('editar_michi', args=(self.object.id,))
+        return context
 
 
 class MichiDeleteView(LoginRequiredMixin, generic.DeleteView):

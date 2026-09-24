@@ -276,22 +276,25 @@ python manage.py createsuperuser  # o cualquier usuario vía shell/admin
 - Sesión persiste vía `django.contrib.sessions` (cookie de sesión, backend default de Django — sin configuración extra).
 - `python manage.py test registro` — 15/15 tests pasando, incluye `AutenticacionTests` (anónimo redirigido a login, usuario autenticado puede operar).
 
-## Fase 17: Base de datos — MySQL vía Docker
+## Fase 17: Base de datos — PostgreSQL vía Docker
 
-Cambio de motor pedido por el curso (MySQL/XAMPP). En vez de instalar XAMPP, se usa un contenedor Docker equivalente (mismo resultado: un MySQL escuchando en `localhost`), definido en `docker-compose.yml` (junto a `manage.py`, en esta misma carpeta):
+Rama `Desarrollo_Django-eva02-postgres`, bifurcada desde `Desarrollo_Django-eva02` (que usa MySQL, ver su propio README) justo después de cerrar CRUD+auth. Cambio de motor pedido por el curso — mismo `registro` app, mismos modelos y migraciones, solo cambia `DATABASES`. Servicio definido en `docker-compose.yml` (junto a `manage.py`, en esta misma carpeta):
 
 ```bash
 docker compose up -d
 ```
 
-- `docker-compose.yml`: servicio `db` (MySQL 8.0), puerto `3307:3306`, credenciales y volumen con nombre (`inacap_mysql_data`) para no perder datos entre reinicios.
-- `avance_proyecto/settings.py`: `DATABASES['default']` apunta a MySQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
-- Driver: `PyMySQL` (puro Python, no requiere compilador C en Windows como sí pide `mysqlclient`). Shim `pymysql.install_as_MySQLdb()` en `avance_proyecto/__init__.py` — Django solo sabe hablar con la API de `MySQLdb`.
-- Puerto `3307` (no `3306`) para no chocar con otro contenedor MySQL ya en uso en esta máquina para otro proyecto.
-- Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el MySQL real del contenedor, no SQLite.
+- `docker-compose.yml`: servicio `db` (Postgres 16), puerto `5433:5432`, credenciales y volumen con nombre (`inacap_postgres_data`).
+- `avance_proyecto/settings.py`: `DATABASES['default']` apunta a PostgreSQL, credenciales vía variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) con defaults que calzan con el contenedor de arriba.
+- Driver: `psycopg2-binary` (wheel precompilado, sin compilador C en Windows). A diferencia de MySQL, Postgres no necesita shim en `avance_proyecto/__init__.py` (se dejó vacío en esta rama).
+- Puerto `5433` (no `5432`) para no chocar con otro contenedor Postgres ya en uso en esta máquina para otro proyecto.
+- Migrado y verificado: `python manage.py migrate` + `python manage.py test registro` (15/15) corriendo contra el Postgres real del contenedor.
 
-La rama `Desarrollo_Django-eva02-postgres` parte de este mismo punto y cambia el motor a PostgreSQL:
+## Fase 18: Endurecimiento a nivel Destacado (CRUD, backend y sesiones)
 
-```bash
-git checkout Desarrollo_Django-eva02-postgres
-```
+Cierra los tres indicadores que quedaban en "Logrado" para empujarlos a "Destacado":
+
+- **CRUD robusto (2.1.3)** — `registro/forms.py`: `clean_nombre`/`clean_tipo` rechazan strings vacíos o solo espacios; `clean_foto` valida tamaño máximo (5 MB). Antes solo se apoyaba en las validaciones automáticas del `ModelForm`.
+- **Backend modular (2.1.4)** — `registro/views.py`: `agregar_michi`/`editar_michi` (function-based) pasaron a `AgregarMichiView`/`EditarMichiView` (`generic.CreateView`/`UpdateView`), compartiendo `MichiFormViewMixin` con el `DeleteView` ya existente. Las 3 vistas de escritura ahora tienen el mismo estilo class-based, mismo patrón `LoginRequiredMixin`, menos duplicación (template/contexto compartido).
+- **Sesiones con expiración (Actividad General)** — `avance_proyecto/settings.py`: `SESSION_COOKIE_AGE = 1800` (30 min), `SESSION_EXPIRE_AT_BROWSER_CLOSE = True`, `SESSION_SAVE_EVERY_REQUEST = True` (renueva el timer en cada request).
+- Verificado: `python manage.py test registro` — 19/19 tests pasando (4 nuevos: validación de formulario ×3, política de sesión ×1), URLs de agregar/editar/eliminar probadas manualmente contra el servidor de desarrollo.
