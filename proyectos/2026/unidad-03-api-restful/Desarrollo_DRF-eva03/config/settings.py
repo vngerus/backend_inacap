@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -167,3 +168,6 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,  # necesario para subir fotos (multipart) desde Swagger
 }
+
+if "test" in sys.argv:  # hasher rápido solo al correr tests; en producción se usa PBKDF2 por defecto
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
