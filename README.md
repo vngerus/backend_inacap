@@ -12,6 +12,8 @@ proyectos/
     └── unidad-01-tecnologias-servidor/
         ├── Desarrollo_Django-eva01/   # Evaluación 1 (Unidad 1) — cerrada
         └── Desarrollo_Django-eva02/   # Evaluación 2 (Unidad 2) — copia de eva01, CRUD+admin+sesiones
+    └── unidad-03-api-restful/
+        └── Desarrollo_DRF-eva03/      # Evaluación 3 (Unidad 3) — API RESTful con DRF + JWT, proyecto independiente
 ```
 
 Cada entrega Django es independiente: propio `manage.py`, `settings.py`, migraciones. `Desarrollo_Django-eva02` nace como copia de `Desarrollo_Django-eva01` en el punto donde esa evaluación quedó cerrada — `Desarrollo_Django-eva01` ya no se modifica.
@@ -44,7 +46,22 @@ Escala de apreciación de Unidad 2 (Django Admin + CRUD), 6 indicadores — todo
 
 Detalle fase a fase (incluye Fase 15 Delete, Fase 16 sesiones, Fase 17 base de datos) en `Desarrollo_Django-eva02/README.md`.
 
+## Evaluación 3 — cumplimiento (`Desarrollo_DRF-eva03`)
+
+Escala de apreciación de Unidad 3 (API RESTful con Django REST Framework, 35%, individual), 7 indicadores. API de adopción de animales: animales con fotos, solicitudes de adopción y avistamientos, con JWT y roles jerárquicos (adoptante < staff < admin). Proyecto nuevo e independiente (no es copia de eva01/eva02), con su propio `requirements.txt`, SQLite y `.env`.
+
+| Indicador | Cómo se cumple |
+|---|---|
+| 1 Configura DRF | `config/settings.py` (`REST_FRAMEWORK`, `SIMPLE_JWT`), 4 apps por recurso |
+| 2-3 Autenticación y seguridad | `cuentas/` — JWT con refresh rotativo y blacklist, throttling, validadores de contraseña, sin escalada de privilegios |
+| 4-6 JSON, endpoints, RESTful | `/api/v1/`, paginación, filtros, códigos 201/400/401/403/404/409/429, Swagger en `/api/docs/` |
+| 7 Uso de IA | `Desarrollo_DRF-eva03/docs/uso-ia.md` |
+
+Instalación, endpoints y seguridad en `Desarrollo_DRF-eva03/README.md`.
+
 ## Entorno virtual
+
+Las evaluaciones 1 y 2 comparten el entorno del repo. `Desarrollo_DRF-eva03` tiene el suyo propio (ver más abajo).
 
 Compartido a nivel de repo, no se versiona:
 
@@ -89,4 +106,17 @@ En ambos casos hay que crear un usuario antes de poder usar `agregar`/`editar`/`
 
 ```bash
 python manage.py createsuperuser
+```
+
+### Evaluación 3 (SQLite, entorno propio)
+
+```bash
+cd proyectos/2026/unidad-03-api-restful/Desarrollo_DRF-eva03
+python -m venv venv
+source venv/Scripts/activate
+pip install -r requirements.txt
+cp .env.example .env               # y poner una DJANGO_SECRET_KEY real
+python manage.py migrate
+python manage.py test
+python manage.py runserver         # Swagger en http://localhost:8000/api/docs/
 ```

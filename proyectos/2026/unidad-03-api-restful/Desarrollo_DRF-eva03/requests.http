@@ -1,0 +1,118 @@
+@base = http://localhost:8000/api/v1
+
+### Registrar adoptante
+POST {{base}}/auth/registro/
+Content-Type: application/json
+
+{"username": "ana", "email": "ana@correo.cl", "password": "Clave-Segura-123"}
+
+### Login (guarda los tokens)
+# @name login
+POST {{base}}/auth/login/
+Content-Type: application/json
+
+{"username": "ana", "password": "Clave-Segura-123"}
+
+###
+@access = {{login.response.body.access}}
+@refresh = {{login.response.body.refresh}}
+
+### Renovar access (rota el refresh)
+POST {{base}}/auth/refresh/
+Content-Type: application/json
+
+{"refresh": "{{refresh}}"}
+
+### Logout (invalida el refresh)
+POST {{base}}/auth/logout/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{"refresh": "{{refresh}}"}
+
+### Listar animales adoptables (público)
+GET {{base}}/animales/?estado=adoptable&especie=perro&search=firulais&ordering=-creado
+
+### Solicitar adopción (autenticado)
+POST {{base}}/solicitudes/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{"animal": 1, "mensaje": "Tengo patio y tiempo"}
+
+### Mis solicitudes
+GET {{base}}/solicitudes/
+Authorization: Bearer {{access}}
+
+### Cancelar solicitud
+POST {{base}}/solicitudes/1/cancelar/
+Authorization: Bearer {{access}}
+
+### Reportar avistamiento con foto (poner un perro.png junto a este archivo)
+POST {{base}}/avistamientos/
+Authorization: Bearer {{access}}
+Content-Type: multipart/form-data; boundary=limite
+
+--limite
+Content-Disposition: form-data; name="especie"
+
+perro
+--limite
+Content-Disposition: form-data; name="descripcion"
+
+Perro café con collar rojo
+--limite
+Content-Disposition: form-data; name="lugar"
+
+Plaza de Armas
+--limite
+Content-Disposition: form-data; name="fecha_avistamiento"
+
+2026-10-06
+--limite
+Content-Disposition: form-data; name="foto"; filename="perro.png"
+Content-Type: image/png
+
+< ./perro.png
+--limite--
+
+### --- Solo staff: usar el access token de una cuenta staff ---
+
+### Crear animal (multipart, con foto opcional)
+POST {{base}}/animales/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{"nombre": "Firulais", "especie": "perro", "sexo": "macho", "edad_meses": 18, "refugio": "Huellitas"}
+
+### Aprobar solicitud
+POST {{base}}/solicitudes/1/aprobar/
+Authorization: Bearer {{access}}
+
+### Rechazar solicitud
+POST {{base}}/solicitudes/1/rechazar/
+Authorization: Bearer {{access}}
+
+### Verificar avistamiento
+POST {{base}}/avistamientos/1/verificar/
+Authorization: Bearer {{access}}
+
+### Convertir avistamiento en animal
+POST {{base}}/avistamientos/1/convertir/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{"nombre": "Canelo"}
+
+### --- Solo admin ---
+
+### Promover a staff
+PATCH {{base}}/usuarios/2/
+Authorization: Bearer {{access}}
+Content-Type: application/json
+
+{"is_staff": true}
+
+### Borrar animal
+DELETE {{base}}/animales/1/
+Authorization: Bearer {{access}}

@@ -2,7 +2,7 @@
 
 Herramienta: Claude (Claude Code), usado como apoyo para diseñar la API, planificar la implementación y revisar seguridad. Cada entrada registra qué se pidió, qué recomendó la IA, cómo se verificó y qué se decidió. Las decisiones finales las tomé yo; donde cambié o rechacé algo, queda anotado.
 
-Las entradas 1 a 9 salen de la sesión de diseño (grill-me) del 2026-10-06. Los tests citados se escriben durante la implementación; al terminar cada task hay que confirmar que existen y pasan (`python manage.py test -v 2`).
+Las entradas 1 a 9 salen de la sesión de diseño (grill-me) del 2026-10-06; las 10 y 11 son de la implementación. Los tests citados existen y pasan (`python manage.py test -v 2`, 67 tests).
 
 ---
 
@@ -70,6 +70,20 @@ Las entradas 1 a 9 salen de la sesión de diseño (grill-me) del 2026-10-06. Los
 - **Qué decidí:** seguir el patrón de los proyectos anteriores, con la carpeta nueva dentro de `proyectos/2026/`.
 
 ---
+
+## 10. Velocidad de los tests (implementación)
+
+- **Qué pregunté:** nada; lo detecté al correr los primeros tests de `cuentas`: 13 tests tardaban 55 segundos.
+- **Qué recomendó la IA:** el plan original no lo preveía. La causa era el hash de contraseñas PBKDF2 de Django, que es lento a propósito, ejecutado en cada `setUp`. La IA propuso usar un hasher rápido solo cuando se corren tests.
+- **Cómo lo verifiqué:** medí antes (55 s) y después (suite completa de 16 tests en 0,8 s). Confirmé que el cambio queda condicionado a `"test" in sys.argv`, así que en ejecución normal sigue PBKDF2.
+- **Qué decidí:** acepté el hasher MD5 solo para tests. Costo si me equivoco: ninguno en producción, porque la rama no se activa fuera de `manage.py test`.
+
+## 11. Revisión final de lo implementado
+
+- **Qué pregunté:** revisar el código completo contra los 7 indicadores y los 5 casos del plan que no cubre un test "feliz".
+- **Qué recomendó la IA:** ninguna falla crítica; anotó mejoras menores que dejé sin implementar: el throttle de 5/min por IP puede afectar a varios usuarios tras una misma red (NAT) al renovar tokens; un admin puede desactivarse a sí mismo; `select_for_update` no bloquea en SQLite (hay una sola escritura a la vez, pero en MySQL/Postgres sí aplicaría); el username distingue mayúsculas.
+- **Cómo lo verifiqué:** 67 tests en verde, `makemigrations --check` sin cambios, `check --deploy` con solo avisos de HTTPS (documentados en el README) y una prueba en vivo con `runserver` (registro 201, login, `GET /solicitudes/` 200, sin token 401, Swagger 200).
+- **Qué decidí:** dejar esas mejoras fuera: ninguna afecta la pauta y cada una agrega código. Quedan anotadas como pendientes.
 
 ## Entradas de la implementación
 
