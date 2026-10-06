@@ -28,6 +28,10 @@ class RegistroTests(BaseAPITest):
         user = User.objects.get(username="nuevo")
         self.assertFalse(user.is_staff or user.is_superuser)
 
+    def test_registro_funciona_aunque_el_cliente_mande_un_token_vencido(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer token-vencido-o-basura")
+        self.assertEqual(self.registrar().status_code, 201)
+
     def test_registro_exige_email(self):
         response = self.client.post(REGISTRO, {"username": "x", "password": CLAVE}, format="json")
         self.assertEqual(response.status_code, 400)

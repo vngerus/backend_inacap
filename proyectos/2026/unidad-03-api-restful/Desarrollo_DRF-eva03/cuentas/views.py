@@ -12,6 +12,7 @@ from .throttles import AuthRateThrottle
 
 class RegistroView(generics.CreateAPIView):
     serializer_class = RegistroSerializer
+    authentication_classes = []  # público: un token vencido en el cliente no debe bloquear el registro
     permission_classes = [AllowAny]
     throttle_classes = [AuthRateThrottle]
 
@@ -21,6 +22,7 @@ class LoginView(TokenObtainPairView):
 
 
 class RefreshView(TokenRefreshView):
+    authentication_classes = []  # el refresh viaja en el body, no en el header
     throttle_classes = [AuthRateThrottle]
 
 
