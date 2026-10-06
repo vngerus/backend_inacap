@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from adopciones.views import SolicitudViewSet
 from animales.views import AnimalViewSet
+from avistamientos.views import AvistamientoViewSet
 from cuentas.views import UsuarioViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
@@ -12,6 +13,7 @@ router = DefaultRouter()
 router.register("usuarios", UsuarioViewSet, basename="usuario")
 router.register("animales", AnimalViewSet, basename="animal")
 router.register("solicitudes", SolicitudViewSet, basename="solicitud")
+router.register("avistamientos", AvistamientoViewSet, basename="avistamiento")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
