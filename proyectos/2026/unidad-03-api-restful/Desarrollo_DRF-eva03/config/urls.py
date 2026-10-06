@@ -2,10 +2,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from cuentas.views import UsuarioViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
+router.register("usuarios", UsuarioViewSet, basename="usuario")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

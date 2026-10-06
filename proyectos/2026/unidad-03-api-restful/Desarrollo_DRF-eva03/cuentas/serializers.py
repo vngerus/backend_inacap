@@ -40,3 +40,10 @@ class LogoutSerializer(serializers.Serializer):
 
     def save(self):
         self.token.blacklist()
+
+
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "email", "is_staff", "is_superuser", "is_active")
+        read_only_fields = ("id", "username", "email", "is_superuser")  # admin solo cambia is_staff e is_active

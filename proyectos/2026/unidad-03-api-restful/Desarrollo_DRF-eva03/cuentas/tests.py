@@ -101,3 +101,49 @@ class RefreshLogoutTests(BaseAPITest):
         propio = self.tokens("ana")
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {propio['access']}")
         self.assertEqual(self.client.post(LOGOUT, {"refresh": ajeno["refresh"]}, format="json").status_code, 400)
+
+
+class UsuariosAdminTests(BaseAPITest):
+    def url(self, user):
+        return f"/api/v1/usuarios/{user.pk}/"
+
+    def test_solo_admin_ve_usuarios(self):
+        self.assertEqual(self.client.get("/api/v1/usuarios/").status_code, 401)
+        for user in (self.adoptante, self.staff):
+            self.client.force_authenticate(user)
+            self.assertEqual(self.client.get("/api/v1/usuarios/").status_code, 403)
+        self.client.force_authenticate(self.admin)
+        response = self.client.get("/api/v1/usuarios/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["count"], 4)
+
+    def test_admin_promueve_a_staff(self):
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(self.url(self.adoptante), {"is_staff": True}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.adoptante.refresh_from_db()
+        self.assertTrue(self.adoptante.is_staff)
+
+    def test_staff_no_puede_promover_a_nadie(self):
+        self.client.force_authenticate(self.staff)
+        response = self.client.patch(self.url(self.adoptante), {"is_staff": True}, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.adoptante.refresh_from_db()
+        self.assertFalse(self.adoptante.is_staff)
+
+    def test_nadie_se_hace_superusuario_por_la_api(self):
+        self.client.force_authenticate(self.admin)
+        self.client.patch(self.url(self.adoptante), {"is_superuser": True}, format="json")
+        self.adoptante.refresh_from_db()
+        self.assertFalse(self.adoptante.is_superuser)
+
+    def test_admin_desactiva_cuenta_y_ya_no_puede_entrar(self):
+        self.client.force_authenticate(self.admin)
+        self.client.patch(self.url(self.adoptante), {"is_active": False}, format="json")
+        self.client.force_authenticate(None)
+        response = self.client.post(LOGIN, {"username": "ana", "password": CLAVE}, format="json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_no_se_borran_usuarios_por_la_api(self):
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(self.client.delete(self.url(self.adoptante)).status_code, 405)
