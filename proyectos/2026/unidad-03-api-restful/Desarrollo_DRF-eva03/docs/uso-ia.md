@@ -1,90 +1,33 @@
-# Uso de IA en el desarrollo (indicador 7)
+# Uso de IA en el desarrollo
 
-Herramienta: Claude (Claude Code), usado como apoyo para diseñar la API, planificar la implementación y revisar seguridad. Cada entrada registra qué se pidió, qué recomendó la IA, cómo se verificó y qué se decidió. Las decisiones finales las tomé yo; donde cambié o rechacé algo, queda anotado.
+Usé Claude (Claude Code) como apoyo para diseñar la API, planificar la implementación y revisar la seguridad. Cada entrada anota qué pregunté, qué propuso la IA, cómo lo verifiqué y qué decidí. Las decisiones finales son mías; donde cambié o rechacé algo, queda dicho. Los tests citados existen y pasan con `python manage.py test -v 2`.
 
-Las entradas 1 a 9 salen de la sesión de diseño (grill-me) del 2026-10-06; las 10 y 11 son de la implementación. Los tests citados existen y pasan (`python manage.py test -v 2`, 67 tests).
+## Diseño
 
----
+**1. Tema y alcance.** Pregunté si convenía hacer una API de adopción de animales en vez de repetir el dominio `Michi` de los proyectos anteriores. La IA lo recomendó porque da recursos con relaciones reales y justifica la autenticación y los permisos. Lo acepté y agregué por mi cuenta las fotos y los avistamientos. La IA propuso una versión mínima de avistamiento (sin mapa, comentarios ni notificaciones) para no inflar el alcance, y la acepté.
 
-## 1. Dominio y alcance
+**2. Roles.** La IA recomendó usar solo `is_staff`. Yo pedí una jerarquía de roles. Quedó en tres niveles (adoptante, staff y admin) con `is_staff` e `is_superuser`, sin modelo propio de roles. Rechacé un cuarto nivel `voluntario` porque no aportaba. Solo el admin promueve staff, para evitar que alguien se ascienda solo (test `test_staff_no_puede_promover_a_nadie`).
 
-- **Qué pregunté:** si convenía apuntar la API a adopción de animales en vez de repetir el dominio `Michi`.
-- **Qué recomendó la IA:** adopción de animales, porque da recursos con relaciones reales (`Animal`, `SolicitudAdopcion`) y justifica la autenticación, los permisos y los códigos 409.
-- **Cómo lo verifiqué:** comparé contra la pauta (productos esperados y los 7 indicadores) para ver que cada indicador tuviera algo concreto que mostrar.
-- **Qué decidí:** adopté el dominio y le agregué por iniciativa propia fotos de animales y avistamientos. La IA propuso la versión mínima del avistamiento (sin mapa, comentarios ni notificaciones) para no inflar el alcance, y la acepté.
+**3. Estados.** La IA propuso `disponible` para el animal y yo lo cambié a `adoptable` / `adoptado`, que describe mejor lo que le pasa. Para las solicitudes aceptó el ciclo `pendiente` → `aprobada`, `rechazada` o `cancelada`, con aprobación atómica (el animal pasa a `adoptado` y se rechazan las otras pendientes). Verificado con `test_aprobar_adopta_al_animal_y_rechaza_las_demas`, `test_aprobar_resuelta_responde_409` y `test_solicitud_pendiente_duplicada_responde_400`. Descarté un tope de solicitudes pendientes por usuario: se puede agregar después.
 
-## 2. Roles y permisos
+**4. Forma de la API.** La IA propuso rutas versionadas (`/api/v1/`), recursos en plural, acciones explícitas (`/aprobar/`, `/rechazar/`) en vez de un `PATCH` libre sobre `estado`, paginación, filtros, el formato de error estándar de DRF y Swagger con `drf-spectacular`. Lo contrasté con la documentación oficial y lo acepté: las acciones explícitas evitan saltarse el ciclo de la solicitud, y el formato estándar evita inventar uno propio. Test: `test_schema_documenta_todos_los_recursos`.
 
-- **Qué pregunté:** quién aprueba solicitudes y cómo distinguir roles.
-- **Qué recomendó la IA:** usar solo `is_staff`. Yo pedí una jerarquía (admin, staff, etc.).
-- **Cómo lo verifiqué:** revisé la matriz de permisos propuesta contra los endpoints; la prueba son los tests de permisos de `cuentas`, `animales`, `adopciones` y `avistamientos`.
-- **Qué decidí:** 3 niveles (adoptante < staff < admin) con `is_staff` e `is_superuser`, sin modelo de roles. Rechacé un cuarto nivel `voluntario` porque no aporta a la pauta. Regla de seguridad que se mantuvo: solo admin promueve staff, para evitar escalada de privilegios (test `test_staff_no_puede_promover_a_nadie`).
+**5. Plan de implementación.** La IA armó el plan paso a paso, con tests primero, siguiendo la estructura de las evaluaciones 1 y 2. Revisé esa estructura antes de aceptarlo y corregí dos cosas: el proyecto se trabaja en `main` y no en una rama nueva, y las evaluaciones anteriores ya están cerradas.
 
-## 3. Ciclo de vida de la solicitud
+## Autenticación y seguridad
 
-- **Qué pregunté:** estados y reglas de una solicitud de adopción.
-- **Qué recomendó la IA:** `pendiente → aprobada/rechazada/cancelada`, resolver solo desde `pendiente`, aprobar de forma atómica (adopta al animal y rechaza las otras pendientes), 409 si el animal ya fue adoptado, 400 si hay una pendiente duplicada.
-- **Cómo lo verifiqué:** tests `test_aprobar_adopta_al_animal_y_rechaza_las_demas`, `test_aprobar_resuelta_responde_409`, `test_solicitud_pendiente_duplicada_responde_400` y la restricción única condicional en la base de datos.
-- **Qué decidí:** acepté el ciclo completo. Descarté poner un tope de solicitudes pendientes por usuario (se puede agregar luego con una validación más).
+**6. Mecanismo.** La IA recomendó JWT con `simplejwt` en lugar de `TokenAuthentication` (que no se puede revocar), con refresh rotativo y blacklist, límite de intentos en login y registro, validadores de contraseña, secretos en `.env`, permisos cerrados por defecto, un registro que ignore `is_staff` y un error de login genérico. Lo verifiqué con la documentación de DRF y simplejwt y con tests: `test_login_tiene_throttling`, `test_registro_ignora_intento_de_escalada`, `test_login_no_revela_si_falla_usuario_o_clave`, `test_refresh_rota_y_el_token_viejo_deja_de_servir`, `test_logout_invalida_el_refresh`. Acepté las siete medidas y SQLite como base de datos.
 
-## 4. Estados del animal
+**7. Duración de la sesión.** Objeté que un token que vence obliga a iniciar sesión otra vez. La IA explicó que un access corto (15 minutos) con un refresh largo y rotativo renueva la sesión sola mientras se usa, y propuso 30 días sin uso. Yo pregunté si eso era OTP: la IA aclaró que OTP es un segundo factor de un solo uso, que no tiene que ver con la duración de la sesión, y que "que el token muera al hacer login" sería sesión única, que no recomendó. Quedó refresh de 30 días con rotación y blacklist, con `logout` que lo invalida. Dejé fuera OTP y sesión única.
 
-- **Qué pregunté:** nombre del estado inicial del animal.
-- **Qué recomendó la IA:** `disponible`.
-- **Cómo lo verifiqué:** lo leí contra el flujo de adopción.
-- **Qué decidí:** lo cambié a `adoptable` / `adoptado`, porque describe mejor lo que le pasa al animal. La IA ajustó el resto del diseño a ese nombre.
+**8. Fotos.** La IA propuso un `ImageField` por modelo, validar extensión, tamaño (5 MB) y formato real con Pillow, y guardar con nombre aleatorio. Lo acepté, sin galería de varias fotos. Tests: `test_foto_con_contenido_que_no_es_imagen`, `test_foto_con_extension_peligrosa`, `test_foto_con_formato_no_permitido`, `test_foto_mayor_a_5mb`.
 
-## 5. Autenticación y seguridad (indicadores 2 y 3)
+## Cosas que aparecieron al implementar y probar
 
-- **Qué pregunté:** qué mecanismo de autenticación y qué medidas de seguridad aplicar.
-- **Qué recomendó la IA:** JWT con `simplejwt` (en vez de `TokenAuthentication`, que no se puede revocar), refresh rotativo con blacklist, throttling en login y registro, validadores de contraseña, secretos en `.env`, permisos cerrados por defecto, registro que no acepte `is_staff`, error de login genérico.
-- **Cómo lo verifiqué:** documentación oficial de DRF y simplejwt, y tests: `test_login_tiene_throttling`, `test_registro_ignora_intento_de_escalada`, `test_login_no_revela_si_falla_usuario_o_clave`, `test_refresh_rota_y_el_token_viejo_deja_de_servir`, `test_logout_invalida_el_refresh`.
-- **Qué decidí:** acepté las 7 medidas con SQLite como base de datos. La IA propuso un access de 15 minutos con un refresh más largo; ver entrada 6 para lo que cambié.
+**9. Tests lentos.** Los primeros 13 tests tardaban 55 segundos por el hash de contraseñas PBKDF2, que es lento a propósito. La IA propuso un hasher rápido solo cuando se corren tests (`"test" in sys.argv`). Medí 0,8 s para la suite de ese momento y confirmé que en ejecución normal sigue usando PBKDF2. Lo acepté.
 
-## 6. Duración de la sesión
+**10. Registro bloqueado por un token vencido.** Al probar en Swagger, el registro devolvió 401 aunque es un endpoint público. La causa: `JWTAuthentication` rechaza un token inválido en el header `Authorization` aunque la vista sea pública, y Swagger seguía mandando uno viejo. Un cliente real con una sesión caducada habría fallado igual. Escribí primero el test que lo reproduce (`test_registro_funciona_aunque_el_cliente_mande_un_token_vencido`), vi que fallaba, y desactivé la autenticación en `registro` y `refresh`. Quedó en 201.
 
-- **Qué pregunté:** si un token que expira obliga al usuario a iniciar sesión otra vez ("no vale la pena así").
-- **Qué recomendó la IA:** mantener el access corto (15 minutos) y un refresh largo con rotación, de modo que la sesión se renueve sola mientras se usa; propuso 30 días sin uso.
-- **Cómo lo verifiqué:** pregunté si eso era OTP. La IA aclaró que OTP es un segundo factor de un solo uso, que no tiene relación con la duración de la sesión, y que "el token muere al hacer login" sería sesión única, que no recomendó. Contrasté con la documentación de simplejwt (`ROTATE_REFRESH_TOKENS`, `BLACKLIST_AFTER_ROTATION`).
-- **Qué decidí:** refresh de 30 días con rotación y blacklist, `logout` que lo invalida, y dejé fuera OTP y sesión única.
+**11. Contraseña débil.** El registro devolvió 400 con una clave de 6 caracteres. No era un fallo: el validador de contraseñas de Django la rechazó por corta y común, que es lo que debe hacer.
 
-## 7. Forma de la API (indicadores 4, 5 y 6)
-
-- **Qué pregunté:** estructura de rutas, respuestas JSON y errores.
-- **Qué recomendó la IA:** `/api/v1/`, recursos en plural, acciones explícitas (`/aprobar/`, `/rechazar/`) en vez de un `PATCH` libre sobre `estado`, paginación, filtros, formato de error estándar de DRF y Swagger con `drf-spectacular`.
-- **Cómo lo verifiqué:** documentación oficial de DRF y drf-spectacular, y el test `test_schema_documenta_todos_los_recursos`.
-- **Qué decidí:** acepté todo. Las acciones explícitas evitan que se salte el ciclo de la solicitud; el formato de error estándar evita inventar uno propio.
-
-## 8. Fotos de animales y avistamientos
-
-- **Qué pregunté:** cómo subir imágenes de forma segura.
-- **Qué recomendó la IA:** un `ImageField` por modelo, validar tipo, extensión y tamaño (5 MB), verificar con Pillow y guardar con nombre UUID.
-- **Cómo lo verifiqué:** tests `test_foto_con_contenido_que_no_es_imagen`, `test_foto_con_extension_peligrosa`, `test_foto_con_formato_no_permitido`, `test_foto_mayor_a_5mb`.
-- **Qué decidí:** acepté la propuesta, sin galería de varias fotos (suma otro modelo y no mejora la nota).
-
-## 9. Plan de implementación y estructura
-
-- **Qué pregunté:** cómo organizar el trabajo para no cometer errores y seguir el patrón de las evaluaciones 1 y 2.
-- **Qué recomendó la IA:** un plan con tareas pequeñas, test primero y cada una mapeada a un indicador, con `CLAUDE.md` y `docs/superpowers/plans/` como en los otros proyectos; 4 apps por recurso; `requirements.txt` propio del proyecto.
-- **Cómo lo verifiqué:** revisé la estructura y el plan de `Desarrollo_Django-eva02` antes de aceptar. Yo corregí que el proyecto se trabaja en `main` y no en una rama nueva, y que las evaluaciones 1 y 2 ya están cerradas.
-- **Qué decidí:** seguir el patrón de los proyectos anteriores, con la carpeta nueva dentro de `proyectos/2026/`.
-
----
-
-## 10. Velocidad de los tests (implementación)
-
-- **Qué pregunté:** nada; lo detecté al correr los primeros tests de `cuentas`: 13 tests tardaban 55 segundos.
-- **Qué recomendó la IA:** el plan original no lo preveía. La causa era el hash de contraseñas PBKDF2 de Django, que es lento a propósito, ejecutado en cada `setUp`. La IA propuso usar un hasher rápido solo cuando se corren tests.
-- **Cómo lo verifiqué:** medí antes (55 s) y después (suite completa de 16 tests en 0,8 s). Confirmé que el cambio queda condicionado a `"test" in sys.argv`, así que en ejecución normal sigue PBKDF2.
-- **Qué decidí:** acepté el hasher MD5 solo para tests. Costo si me equivoco: ninguno en producción, porque la rama no se activa fuera de `manage.py test`.
-
-## 11. Revisión final de lo implementado
-
-- **Qué pregunté:** revisar el código completo contra los 7 indicadores y los 5 casos del plan que no cubre un test "feliz".
-- **Qué recomendó la IA:** ninguna falla crítica; anotó mejoras menores que dejé sin implementar: el throttle de 5/min por IP puede afectar a varios usuarios tras una misma red (NAT) al renovar tokens; un admin puede desactivarse a sí mismo; `select_for_update` no bloquea en SQLite (hay una sola escritura a la vez, pero en MySQL/Postgres sí aplicaría); el username distingue mayúsculas.
-- **Cómo lo verifiqué:** 67 tests en verde, `makemigrations --check` sin cambios, `check --deploy` con solo avisos de HTTPS (documentados en el README) y una prueba en vivo con `runserver` (registro 201, login, `GET /solicitudes/` 200, sin token 401, Swagger 200).
-- **Qué decidí:** dejar esas mejoras fuera: ninguna afecta la pauta y cada una agrega código. Quedan anotadas como pendientes.
-
-## Entradas de la implementación
-
-Agregar aquí una entrada (con los cuatro campos) por cada problema real que aparezca al ejecutar el plan: un error de configuración, una recomendación de la IA que haya que corregir, una vulnerabilidad detectada en una revisión de seguridad. Estas entradas son las que muestran contraste crítico con la IA, que es lo que pide el nivel Destacado del indicador 7.
+**12. Revisión final.** La IA no encontró fallas graves y anotó mejoras menores que dejé fuera porque cada una agrega código sin cambiar lo esencial: el límite de 5 intentos por minuto por IP puede afectar a varias personas en una misma red al renovar tokens, un admin puede desactivarse a sí mismo, `select_for_update` no bloquea filas en SQLite (sí lo haría en MySQL o Postgres) y el nombre de usuario distingue mayúsculas. Verifiqué con la suite en verde, `makemigrations --check` sin cambios, `check --deploy` con solo avisos de HTTPS (documentados en el README) y una prueba en vivo con `runserver`.
