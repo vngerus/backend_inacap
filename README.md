@@ -55,7 +55,7 @@ Escala de apreciación de Unidad 3 (API RESTful con Django REST Framework, 35%, 
 | 1 Configura DRF | `config/settings.py` (`REST_FRAMEWORK`, `SIMPLE_JWT`), 4 apps por recurso |
 | 2-3 Autenticación y seguridad | `cuentas/` — JWT con refresh rotativo y blacklist, throttling, validadores de contraseña, sin escalada de privilegios |
 | 4-6 JSON, endpoints, RESTful | `/api/v1/`, paginación, filtros, códigos 201/400/401/403/404/409/429, Swagger en `/api/docs/` |
-| 7 Uso de IA | `Desarrollo_DRF-eva03/docs/uso-ia.md` |
+| 7 Uso de IA | Plan de implementación hecho con IA (Superpowers), ver `Desarrollo_DRF-eva03/README.md` |
 
 Instalación, endpoints y seguridad en `Desarrollo_DRF-eva03/README.md`.
 
