@@ -109,4 +109,4 @@ Falta para un despliegue real: HTTPS (`SECURE_SSL_REDIRECT`, HSTS y cookies segu
 
 ## Desarrollo con IA
 
-El plan de implementación se hizo con IA (Claude Code) usando el plugin Superpowers: se diseñó la API, se escribió un plan por tareas con tests primero y se ejecutó tarea por tarea. El plan queda en `docs/superpowers/plans/`. Las decisiones de diseño y las pruebas en Swagger las revisé y ajusté yo.
+El proyecto se orientó y se planificó con IA (Claude Code, con el plugin Superpowers): primero una ronda de preguntas para definir el diseño, después un plan por tareas con tests primero, ejecutado tarea por tarea. Las preguntas y decisiones están en [`docs/orientacion-ia.md`](docs/orientacion-ia.md). Las decisiones y las pruebas en Swagger las revisé yo.
