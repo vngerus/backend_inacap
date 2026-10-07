@@ -63,29 +63,15 @@ Los roles son jerárquicos: cada uno puede lo del anterior.
 
 ## Endpoints
 
-Todos cuelgan de `/api/v1/`. Los recursos van en plural y las acciones que no son CRUD (aprobar, convertir) son un `POST` sobre el recurso.
+La referencia completa (rutas, parámetros, cuerpos y respuestas) está en Swagger: http://localhost:8000/api/docs/. Se genera desde el código, así que siempre está al día, y desde ahí se puede probar cada endpoint con el botón **Authorize**.
 
-| Método y ruta | Acceso | Códigos |
-|---|---|---|
-| `POST auth/registro/` | público | 201, 400, 429 |
-| `POST auth/login/` | público | 200, 401, 429 |
-| `POST auth/refresh/` | público | 200, 401, 429 |
-| `POST auth/logout/` | autenticado | 205, 400, 401 |
-| `GET animales/` (filtros `especie`, `sexo`, `estado`; `search`; `ordering`) | público | 200 |
-| `GET animales/{id}/` | público | 200, 404 |
-| `POST animales/`, `PATCH` y `PUT animales/{id}/` | staff | 201 o 200, 400, 401, 403 |
-| `DELETE animales/{id}/` | admin | 204, 403 |
-| `POST solicitudes/` | autenticado | 201, 400 (duplicada), 409 (animal ya adoptado) |
-| `GET solicitudes/`, `GET solicitudes/{id}/` | dueño o staff | 200, 404 |
-| `POST solicitudes/{id}/cancelar/` | dueño | 200, 403, 404, 409 |
-| `POST solicitudes/{id}/aprobar/` y `rechazar/` | staff | 200, 403, 404, 409 |
-| `POST avistamientos/` (multipart, con foto) | autenticado | 201, 400 |
-| `GET avistamientos/`, `GET avistamientos/{id}/` | dueño o staff | 200, 404 |
-| `POST avistamientos/{id}/verificar/` y `descartar/` | staff | 200, 403, 404, 409 |
-| `POST avistamientos/{id}/convertir/` | staff | 201, 403, 404, 409 |
-| `GET usuarios/`, `GET` y `PATCH usuarios/{id}/` | admin | 200, 403 |
+Todos cuelgan de `/api/v1/` y siguen el mismo patrón:
 
-**Formato de las respuestas.** Los listados van paginados, 20 por página: `{"count", "next", "previous", "results"}`. Los errores usan el formato estándar de DRF: `{"detail": "..."}` para errores generales y `{"campo": ["mensaje"]}` para datos inválidos.
+- **Recursos** en plural: `auth/`, `animales/`, `solicitudes/`, `avistamientos/` y `usuarios/`.
+- **Acciones** que no son CRUD como `POST` sobre el recurso: `solicitudes/{id}/aprobar/`, `avistamientos/{id}/convertir/`.
+- **Lectura pública** solo en `animales/`. El resto exige token.
+
+**Paginación y errores.** Los listados van paginados, 20 por página: `{"count", "next", "previous", "results"}`. Los errores usan el formato estándar de DRF: `{"detail": "..."}` para errores generales y `{"campo": ["mensaje"]}` para datos inválidos.
 
 **Códigos de respuesta.** 201 al crear, 400 por datos inválidos, 401 sin token, 403 sin permiso, 404 si no existe, 409 si el estado actual no permite la acción (por ejemplo, aprobar una solicitud que ya se resolvió) y 429 por demasiados intentos.
 
